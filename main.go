@@ -37,7 +37,7 @@ func main() {
 		log.Fatal("Unable to find milestone", milestone)
 	}
 
-	issues, _, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all"})
+	issues, _, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: github.ListOptions{PerPage: 999}})
 	if err != nil {
 		log.Fatal(err)
 	}
