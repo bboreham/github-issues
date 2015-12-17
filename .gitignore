@@ -22,3 +22,12 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Emacs backup files
+*~
+
+# Vim backup files
+*.swp
+
+# Project specific
+github-issues
