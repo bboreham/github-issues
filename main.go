@@ -31,6 +31,9 @@ func main() {
 
 	owner, repo := "weaveworks", "weave"
 	milestone := "1.3.2"
+	if len(os.Args) > 1 {
+		milestone = os.Args[1]
+	}
 	milestones, _, err := client.Issues.ListMilestones(owner, repo, &github.MilestoneListOptions{State: "all"})
 	if err != nil {
 		log.Fatal(err)
