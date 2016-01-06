@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"text/template"
 
 	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 var iTemplate = template.Must(template.New("issues").Parse(
@@ -18,7 +20,14 @@ var iTemplate = template.Must(template.New("issues").Parse(
 ))
 
 func main() {
-	client := github.NewClient(nil)
+	var tc *http.Client
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		tc = oauth2.NewClient(oauth2.NoContext, ts)
+	}
+	client := github.NewClient(tc)
 
 	owner, repo := "weaveworks", "weave"
 	milestone := "1.3.2"
