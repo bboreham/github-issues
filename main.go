@@ -12,10 +12,10 @@ import (
 )
 
 var iTemplate = template.Must(template.New("issues").Parse(
-	"{{if .PullRequestLinks}}{{if .PRMerged}}- PR {{.Title}} #{{.Number}}\n" +
+	"{{if .PullRequestLinks}}{{if .PRMerged}}* PR {{.Title}} #{{.Number}}\n" +
 		"{{end}}" +
 		"{{else}}" +
-		"- {{.Title}} #{{.Number}} {{.State}}\n" +
+		"* {{.Title}} #{{.Number}} {{.State}}\n" +
 		"{{end}}",
 ))
 
