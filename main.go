@@ -49,25 +49,29 @@ func main() {
 		log.Fatal("Unable to find milestone", milestone)
 	}
 
-	issues, _, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: github.ListOptions{PerPage: 999}})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, issue := range issues {
-		wrapper := struct {
-			github.Issue
-			PR       *github.PullRequest
-			PRMerged bool
-		}{Issue: issue}
-		if issue.PullRequestLinks != nil {
-			wrapper.PR, _, err = client.PullRequests.Get(owner, repo, *issue.Number)
-			if err != nil {
-				log.Fatal(err)
-			}
-			wrapper.PRMerged = *wrapper.PR.Merged
+	listOptions := github.ListOptions{Page: 1}
+	for listOptions.Page != 0 {
+		issues, response, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: listOptions})
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		iTemplate.Execute(os.Stdout, wrapper)
+		for _, issue := range issues {
+			wrapper := struct {
+				github.Issue
+				PR       *github.PullRequest
+				PRMerged bool
+			}{Issue: issue}
+			if issue.PullRequestLinks != nil {
+				wrapper.PR, _, err = client.PullRequests.Get(owner, repo, *issue.Number)
+				if err != nil {
+					log.Fatal(err)
+				}
+				wrapper.PRMerged = *wrapper.PR.Merged
+			}
+
+			iTemplate.Execute(os.Stdout, wrapper)
+		}
+		listOptions.Page = response.NextPage
 	}
 }
