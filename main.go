@@ -34,22 +34,26 @@ func main() {
 	if len(os.Args) > 1 {
 		milestone = os.Args[1]
 	}
-	milestones, _, err := client.Issues.ListMilestones(owner, repo, &github.MilestoneListOptions{State: "all"})
-	if err != nil {
-		log.Fatal(err)
-	}
 	milestoneNumber := ""
-	for _, m := range milestones {
-		if m.Title != nil && *m.Title == milestone && m.Number != nil {
-			milestoneNumber = fmt.Sprintf("%d", *m.Number)
-			break
+	listOptions := github.ListOptions{Page: 1}
+	for listOptions.Page != 0 {
+		milestones, response, err := client.Issues.ListMilestones(owner, repo, &github.MilestoneListOptions{State: "all", ListOptions: listOptions})
+		if err != nil {
+			log.Fatal(err)
 		}
+		for _, m := range milestones {
+			if m.Title != nil && *m.Title == milestone && m.Number != nil {
+				milestoneNumber = fmt.Sprintf("%d", *m.Number)
+				break
+			}
+		}
+		listOptions.Page = response.NextPage
 	}
 	if milestoneNumber == "" {
 		log.Fatal("Unable to find milestone", milestone)
 	}
 
-	listOptions := github.ListOptions{Page: 1}
+	listOptions.Page = 1
 	for listOptions.Page != 0 {
 		issues, response, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: listOptions})
 		if err != nil {
