@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ func main() {
 		tc = oauth2.NewClient(oauth2.NoContext, ts)
 	}
 	client := github.NewClient(tc)
+	ctx := context.Background()
 
 	owner, repo := "weaveworks", "weave"
 	milestone := "1.3.2"
@@ -37,7 +39,7 @@ func main() {
 	milestoneNumber := ""
 	listOptions := github.ListOptions{Page: 1}
 	for listOptions.Page != 0 {
-		milestones, response, err := client.Issues.ListMilestones(owner, repo, &github.MilestoneListOptions{State: "all", ListOptions: listOptions})
+		milestones, response, err := client.Issues.ListMilestones(ctx, owner, repo, &github.MilestoneListOptions{State: "all", ListOptions: listOptions})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -55,19 +57,19 @@ func main() {
 
 	listOptions.Page = 1
 	for listOptions.Page != 0 {
-		issues, response, err := client.Issues.ListByRepo(owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: listOptions})
+		issues, response, err := client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{Milestone: milestoneNumber, State: "all", ListOptions: listOptions})
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		for _, issue := range issues {
 			wrapper := struct {
-				github.Issue
+				*github.Issue
 				PR       *github.PullRequest
 				PRMerged bool
 			}{Issue: issue}
 			if issue.PullRequestLinks != nil {
-				wrapper.PR, _, err = client.PullRequests.Get(owner, repo, *issue.Number)
+				wrapper.PR, _, err = client.PullRequests.Get(ctx, owner, repo, *issue.Number)
 				if err != nil {
 					log.Fatal(err)
 				}
